@@ -1,15 +1,9 @@
 package com.ixale.starparse.domain.ops;
 
-import com.ixale.starparse.domain.Combat;
-import com.ixale.starparse.domain.Event;
 import com.ixale.starparse.domain.NpcType;
 import com.ixale.starparse.domain.Raid;
 import com.ixale.starparse.domain.RaidBoss;
 import com.ixale.starparse.domain.RaidBossName;
-import com.ixale.starparse.domain.Raid.Npc;
-import com.ixale.starparse.parser.Helpers;
-import com.ixale.starparse.timer.BaseTimer;
-import com.ixale.starparse.timer.TimerManager;
 
 public class RelentlessReplication extends Raid {
 
