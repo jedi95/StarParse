@@ -19,6 +19,7 @@ import com.ixale.starparse.domain.ops.Iokath;
 import com.ixale.starparse.domain.ops.KaraggasPalace;
 import com.ixale.starparse.domain.ops.R4Anomaly;
 import com.ixale.starparse.domain.ops.Ravagers;
+import com.ixale.starparse.domain.ops.RelentlessReplication;
 import com.ixale.starparse.domain.ops.ScumAndVillainy;
 import com.ixale.starparse.domain.ops.TempleOfSacrifice;
 import com.ixale.starparse.domain.ops.TerrorFromBeyond;
@@ -334,7 +335,8 @@ public class Helpers {
 			new EternalChampionship(),
 			new Iokath(),
 			new Dxun(),
-			new R4Anomaly()
+			new R4Anomaly(),
+			new RelentlessReplication()
 	};
 
 	private static final Map<Long, RaidBoss> bossesByGuids = new HashMap<>();

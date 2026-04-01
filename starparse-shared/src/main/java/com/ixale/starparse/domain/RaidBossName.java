@@ -57,6 +57,7 @@ public enum RaidBossName {
 	DreadfulEntity("Dreadful Entity"),
 	XenoanalystII("Xenoanalyst II"),
 	Eyeless("The Eyeless"),
+	XR53("Propagator Core XR-53"),
 
 	// Eternity Vault
 	AnnihilationDroidXRR3("Annihilation Droid XRR-3", "XRR-3"),
