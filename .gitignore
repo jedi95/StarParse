@@ -1,3 +1,12 @@
+.classpath
+.project
+.settings/*
+/starparse-client/.classpath
+/starparse-client/.project
+/starparse-client/.settings/*
+/starparse-shared/.classpath
+/starparse-shared/.project
+/starparse-shared/.settings/*
 /starparse-shared/target/
 /starparse-client/target/
 /starparse-client/sounds
@@ -6,3 +15,4 @@
 /starparse-client/starparse.log
 /starparse-client/starparse.xml
 /starparse-client/icons
+/starparse-client/build

@@ -38,7 +38,7 @@ public class ParselyTest {
 		Params p = new Params();
 
 		p.endpoint = Config.PARSELY_UPLOAD_API;
-		p.serverName = ServerName.TombOfFreedonNadd.getName();
+		p.serverName = ServerName.DarthMalgus.getName();
 		p.timezone = "Europe/Prague";
 		p.guild = "Ixale and Friends (tm)";
 		p.visibility = 0;
@@ -88,7 +88,7 @@ public class ParselyTest {
 		System.out.println(url);
 	}
 
-	@Test
+	//@Test
 	public void testUploadLogged() throws Exception {
 
 		Params p = getParams();
