@@ -55,6 +55,10 @@ public class EventDaoImpl extends H2Dao implements EventDao {
 						ps.setInt(2, e.getLogId());
 						ps.setTimestamp(3, new Timestamp(e.getTimestamp()));
 
+						for (int k = 4; k <= 32; k++) {
+							ps.setObject(k, null);
+						}
+
 						// source and target
 
 						if (e.getSource() != null) {
