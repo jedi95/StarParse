@@ -90,7 +90,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
+
 import java.awt.*;
 import java.io.File;
 import java.net.URI;
@@ -157,51 +157,51 @@ public class MainPresenter implements Initializable {
 	@FXML
 	private Button darkModeButton;
 
-	@Inject
+	@Autowired
 	private OverviewPresenter overviewPresenter;
-	@Inject
+	@Autowired
 	private DamageDealtPresenter damageDealtPresenter;
-	@Inject
+	@Autowired
 	private HealingDonePresenter healingDonePresenter;
-	@Inject
+	@Autowired
 	private DamageTakenPresenter damageTakenPresenter;
-	@Inject
+	@Autowired
 	private HealingTakenPresenter healingTakenPresenter;
-	@Inject
+	@Autowired
 	private CombatLogPresenter combatLogPresenter;
-	@Inject
+	@Autowired
 	private RaidPresenter raidPresenter;
 
-	@Inject
+	@Autowired
 	private SettingsDialogPresenter settingsDialogPresenter;
-	@Inject
+	@Autowired
 	private UploadParselyDialogPresenter uploadParselyDialogPresenter;
-	@Inject
+	@Autowired
 	private RaidNotesDialogPresenter raidNotesDialogPresenter;
 
-	@Inject
+	@Autowired
 	private TimersPopoutPresenter timersPopoutPresenter;
-	@Inject
+	@Autowired
 	private TimersBPopoutPresenter timersBPopoutPresenter;
-	@Inject
+	@Autowired
 	private TimersCPopoutPresenter timersCPopoutPresenter;
-	@Inject
+	@Autowired
 	private TimersCenterPopoutPresenter timersCenterPopoutPresenter;
-	@Inject
+	@Autowired
 	private PersonalStatsPopoutPresenter personalStatsPopoutPresenter;
-	@Inject
+	@Autowired
 	private ChallengesPopoutPresenter challengesPopoutPresenter;
-	@Inject
+	@Autowired
 	private RaidDpsPopoutPresenter raidDpsPopoutPresenter;
-	@Inject
+	@Autowired
 	private RaidHpsPopoutPresenter raidHpsPopoutPresenter;
-	@Inject
+	@Autowired
 	private RaidTpsPopoutPresenter raidTpsPopoutPresenter;
-	@Inject
+	@Autowired
 	private RaidBossPopoutPresenter raidBossPopoutPresenter;
-	@Inject
+	@Autowired
 	private HotsPopoutPresenter hotsPopoutPresenter;
-	@Inject
+	@Autowired
 	private RaidNotesPopoutPresenter raidNotesPopoutPresenter;
 
 	@FXML

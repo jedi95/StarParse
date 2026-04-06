@@ -45,6 +45,15 @@ public class Marshaller {
 		xmlReader.useAttributeFor(Ranking.Percentile.class, "p");
 		xmlReader.useAttributeFor(Ranking.Percentile.class, "v");
 		xmlReader.ignoreUnknownElements();
+
+		XStream.setupDefaultSecurity(xmlReader);
+		xmlReader.allowTypesByWildcard(new String[] {
+				"com.ixale.starparse.**",
+				"java.util.**",
+				"java.lang.**",
+				"javafx.collections.**",
+				"javafx.scene.paint.Color"
+		});
 	}
 
 	@SuppressWarnings("unchecked")

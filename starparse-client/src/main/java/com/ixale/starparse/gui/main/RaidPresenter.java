@@ -58,7 +58,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
+
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -117,9 +117,9 @@ public class RaidPresenter extends BaseCombatLogPresenter {
 	private final HashMap<String, List<AbsorptionStats>> absorptions = new HashMap<>();
 	private RaidItem totalsItem;
 
-	@Inject
+	@Autowired
 	private RaidNotesDialogPresenter raidNotesDialogPresenter;
-	@Inject
+	@Autowired
 	private RaidNotesPopoutPresenter raidNotesPopoutPresenter;
 
 	@Autowired
