@@ -43,13 +43,27 @@ import java.util.TimerTask;
 public class StarparseApp extends Application {
 	private static final Logger logger = LoggerFactory.getLogger(StarparseApp.class);
 
-	public static String VERSION = com.ixale.starparse.domain.Application.VERSION,
+	public static final String VERSION = com.ixale.starparse.domain.Application.VERSION,
 			TITLE = "Ixale's StarParse",
 			CONFIG_FILE = "starparse.xml",
 			CONFIG_TIMERS_FILE = "starparse-timers.xml",
-			CONFIG_ATTACKS_FILE = "starparse-attacks.xml",
-			SOUNDS_DIR = "sounds",
-			ICONS_DIR = "icons";
+			CONFIG_ATTACKS_FILE = "starparse-attacks.xml";
+
+	public static final String SOUNDS_DIR;
+	public static final String ICONS_DIR;
+
+	static {
+		// Resolve resource directories relative to the jar's location (for jpackage compatibility)
+		String appDir = "";
+		try {
+			java.io.File jarFile = new java.io.File(StarparseApp.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+			appDir = jarFile.getParentFile().getAbsolutePath() + java.io.File.separator;
+		} catch (Exception ignored) {
+			// fallback to relative paths (development mode)
+		}
+		SOUNDS_DIR = appDir + "sounds";
+		ICONS_DIR = appDir + "icons";
+	}
 
 	private static final int ERROR_REPORT_INTERVAL = 120 * 1000;
 
