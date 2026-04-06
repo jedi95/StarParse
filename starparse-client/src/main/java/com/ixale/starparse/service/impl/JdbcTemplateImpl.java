@@ -32,11 +32,11 @@ public class JdbcTemplateImpl extends NamedParameterJdbcTemplate {
 	}
 
 	public <T> T query(final String sql, Object[] args, final ResultSetExtractor<T> rse) throws DataAccessException {
-		return this.getJdbcOperations().query(sql, args, rse);
+		return this.getJdbcOperations().query(sql, rse, args);
 	}
 
 	public <T> List<T> query(final String sql, Object[] args, final RowMapper<T> rowMapper) throws DataAccessException {
-		return this.getJdbcOperations().query(sql, args, rowMapper);
+		return this.getJdbcOperations().query(sql, rowMapper, args);
 	}
 
 	public int[] batchUpdate(final String sql, final BatchPreparedStatementSetter bpse) {

@@ -9,7 +9,6 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
@@ -46,7 +45,6 @@ public class Marshaller {
 		xmlReader.useAttributeFor(Ranking.Percentile.class, "v");
 		xmlReader.ignoreUnknownElements();
 
-		XStream.setupDefaultSecurity(xmlReader);
 		xmlReader.allowTypesByWildcard(new String[] {
 				"com.ixale.starparse.**",
 				"java.util.**",

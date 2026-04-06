@@ -179,6 +179,7 @@ public class StarparseAppFactory
 		return loadPresenter(fxmlFile, null);
 	}
 
+	@SuppressWarnings("unchecked")
 	private <T> T loadPresenter(String fxmlFile, final T forcedPresenter)
 	{
 		InputStream fxmlStream = null;

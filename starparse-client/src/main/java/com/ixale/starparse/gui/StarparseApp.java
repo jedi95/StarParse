@@ -78,7 +78,7 @@ public class StarparseApp extends Application {
 		//noinspection StringOperationCanBeSimplified
 		if (!"i".toUpperCase().equals("I")) {
 			// http://hg.openjdk.java.net/jdk8/jdk8/nashorn/rev/343fd0450802
-			Locale.setDefault(new Locale("en", "EN"));
+			Locale.setDefault(Locale.of("en", "EN"));
 		}
 		// prevent bug with ipv6 connect
 		System.setProperty("java.net.preferIPv4Stack", "true");
@@ -279,8 +279,8 @@ public class StarparseApp extends Application {
 				// fallback to default
 				host = Config.DEFAULT_SERVER_HOST;
 			}
-			final URL ws = new URL("https://" + host);
-			final URL url = new URL(ws.getProtocol(), ws.getHost(), 80, "/starparse/error/index.php");
+			final URL ws = URI.create("https://" + host).toURL();
+			final URL url = new URI(ws.getProtocol(), null, ws.getHost(), 80, "/starparse/error/index.php", null, null).toURL();
 
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestMethod("POST");

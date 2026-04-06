@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -110,8 +111,7 @@ public class RankServiceImpl implements RankService {
 			throw new IllegalStateException("Host not set");
 		}
 		//noinspection HttpUrlsUsage
-		final URL ws = new URL("http://" + host);
-		return new URL(ws.getProtocol(), ws.getHost(), 80, "/" + RankService.RANK_URL + "/" + boss.getRaidBossName().name() + "/" + key + ".xml");
+		return new URI("http", null, host, 80, "/" + RankService.RANK_URL + "/" + boss.getRaidBossName().name() + "/" + key + ".xml", null, null).toURL();
 	}
 
 	public Ranking readRanking(final String content) {

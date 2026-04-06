@@ -74,14 +74,14 @@ public class TimerManager {
 								return;
 							}
 							// use this instead
-							startTimer(new CustomTimer(configTimer, clazz.newInstance(), interval), timeFrom);
+							startTimer(new CustomTimer(configTimer, clazz.getDeclaredConstructor().newInstance(), interval), timeFrom);
 							return;
 						}
 					}
 				}
 			}
 
-			final BaseTimer timer = clazz.newInstance();
+			final BaseTimer timer = clazz.getDeclaredConstructor().newInstance();
 			startTimer(timer, timeFrom);
 
 		} catch (Exception e) {
