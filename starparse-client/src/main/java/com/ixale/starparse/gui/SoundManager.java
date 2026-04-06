@@ -31,10 +31,6 @@ public class SoundManager {
 			try {
 				// scan and load
 				final File soundDir = new File(StarparseApp.SOUNDS_DIR);
-				// sync
-				FileLoader.extractZip(new File(StarparseApp.SOUNDS_DIR + ".zip"), soundDir);
-				FileLoader.extractZip(new File(StarparseApp.SOUNDS_DIR + "2.zip"), soundDir);
-
 				if (soundDir.exists() && soundDir.isDirectory()) {
 					for (final File sound: soundDir.listFiles()) {
 						if (sound.isDirectory()) {

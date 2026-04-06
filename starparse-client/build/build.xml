@@ -306,6 +306,31 @@
 				<fx:jvmarg value="-XX:+UseG1GC"/>
 			</fx:platform>
 		</fx:deploy>
-		
+
+		<copy todir="StarParse">
+			<fileset dir="deploy/bundles/StarParse">
+				<include name="*" />
+			</fileset>
+		</copy>
+
+		<copy todir="StarParse">
+			<fileset dir="deploy/bundles/StarParse" includes="**/*" />
+		</copy>
+
+		<copy todir="StarParse/app/icons">
+			<fileset dir="../icons" includes="**/*" />
+		</copy>
+
+		<copy todir="StarParse/app/sounds">
+			<fileset dir="../sounds" includes="**/*" />
+		</copy>
+
+		<delete dir="build"/>
+		<delete dir="deploy"/>
+		<delete dir="dist"/>
+		<delete dir="externalLibs"/>
+		<delete dir="project"/>
+		<delete dir="projectRefs"/>
+
 	</target>
 </project>

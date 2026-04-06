@@ -220,13 +220,6 @@ abstract public class BaseStatsPresenter implements Initializable {
 		}
 		if (icons == null) {
 			icons = new HashMap<>();
-			for (final String zip : Arrays.asList(".zip", "2.zip", "3.zip", "4.zip")) {
-				try {
-					FileLoader.extractZip(new File(StarparseApp.ICONS_DIR + zip), new File(StarparseApp.ICONS_DIR));
-				} catch (Exception e) {
-					logger.error("Unable to load icons [" + zip + "]: " + e.getMessage());
-				}
-			}
 		}
 		if (!icons.containsKey(ico)) {
 			try {
