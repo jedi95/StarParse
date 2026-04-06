@@ -256,21 +256,21 @@ public class CombatDaoImpl extends H2Dao implements CombatDao {
 			+ " AND e.target_name = :playerName AND e.effect_guid = " + EntityGuid.Damage + ""
 			+ ")",
 
-	SQL_GET_DOT_NAMES = "SELECT e.effect_guid, e.ability_name, a.actions, a.ability_guid FROM ("
+	SQL_GET_DOT_NAMES = "SELECT de.effect_guid, de.ability_name, da.actions, da.ability_guid FROM ("
 			+ " SELECT e.effect_guid, e.ability_name, e.ability_guid"
 			+ " FROM effects f "
 			+ " INNER JOIN events e ON (f.event_id_from = e.event_id)"
 			+ " WHERE f.event_id_to > :eventIdFrom AND f.event_id_from < :eventIdTo"
 			+ " AND source_name = :playerName"
-			+ " GROUP BY e.effect_guid"
-			+ " ) e"
+			+ " GROUP BY e.effect_guid, e.ability_name, e.ability_guid"
+			+ " ) de"
 			+ " INNER JOIN ("
-			+ " SELECT ability_guid, COUNT(*) actions"
+			+ " SELECT ability_guid, COUNT(*) AS actions"
 			+ " FROM events"
 			+ " WHERE (event_id BETWEEN :behindEventIdFrom AND :eventIdTo AND timestamp >= :behindTimeFrom)"
 			+ " AND source_name = :playerName AND effect_guid = " + EntityGuid.AbilityActivate
 			+ " GROUP BY ability_guid"
-			+ " ) a ON (a.ability_guid = e.ability_guid)",
+			+ " ) da ON (da.ability_guid = de.ability_guid)",
 
 	SQL_GET_TARGET_NAMES = "SELECT target_type, target_name, target_guid, target_instance"
 			+ ", MIN(timestamp) AS target_time_from, MAX(timestamp) AS target_time_to"
@@ -1168,19 +1168,19 @@ public class CombatDaoImpl extends H2Dao implements CombatDao {
 			pivotsGroup.append(", e.target_name, e.target_instance");
 
 		} else if (byTargetType) {
-			pivotsCols.append(", e.target_name, 0 target_instance");
+			pivotsCols.append(", e.target_name, 0 AS target_instance");
 			pivotsWhere.append(" AND e.target_name != :playerName");
 			pivotsGroup.append(", e.target_name");
 
 		} else {
-			pivotsCols.append(", 'Total' target_name, 0 target_instance");
+			pivotsCols.append(", 'Total' AS target_name, 0 AS target_instance");
 		}
 
 		if (byAbility) {
 			pivotsCols.append(", e.ability_name, e.ability_guid");
 			pivotsGroup.append(", e.ability_name, e.ability_guid");
 		} else {
-			pivotsCols.append(", 'Total' ability_name, 0 ability_guid");
+			pivotsCols.append(", 'Total' AS ability_name, 0 AS ability_guid");
 		}
 
 		return getJdbcTemplate().query(SQL_GET_DAMAGE_DEALT_TOTALS
@@ -1233,18 +1233,18 @@ public class CombatDaoImpl extends H2Dao implements CombatDao {
 				pivotsGroup = new StringBuilder();
 
 		if (byTarget) {
-			pivotsCols.append(", e.target_name, 0 target_instance");
+			pivotsCols.append(", e.target_name, 0 AS target_instance");
 			pivotsGroup.append(", e.target_name");
 
 		} else {
-			pivotsCols.append(", 'Total' target_name, 0 target_instance");
+			pivotsCols.append(", 'Total' AS target_name, 0 AS target_instance");
 		}
 
 		if (byAbility) {
 			pivotsCols.append(", e.ability_name, e.ability_guid");
 			pivotsGroup.append(", e.ability_name, e.ability_guid");
 		} else {
-			pivotsCols.append(", 'Total' ability_name, 0 ability_guid");
+			pivotsCols.append(", 'Total' AS ability_name, 0 AS ability_guid");
 		}
 
 		return getJdbcTemplate().query(SQL_GET_HEALING_DONE_TOTALS
@@ -1366,18 +1366,18 @@ public class CombatDaoImpl extends H2Dao implements CombatDao {
 			pivotsGroup.append(", e.source_name, e.source_instance");
 
 		} else if (bySourceType) {
-			pivotsCols.append(", e.source_name, 0 source_instance");
+			pivotsCols.append(", e.source_name, 0 AS source_instance");
 			pivotsGroup.append(", e.source_name");
 
 		} else {
-			pivotsCols.append(", 'Total' source_name, 0 source_instance");
+			pivotsCols.append(", 'Total' AS source_name, 0 AS source_instance");
 		}
 
 		if (byAbility) {
 			pivotsCols.append(", e.ability_name, e.ability_guid");
 			pivotsGroup.append(", e.ability_name, e.ability_guid");
 		} else {
-			pivotsCols.append(", 'Total' ability_name, 0 ability_guid");
+			pivotsCols.append(", 'Total' AS ability_name, 0 AS ability_guid");
 		}
 
 		return getJdbcTemplate().query(SQL_GET_DAMAGE_TAKEN_TOTALS
@@ -1421,18 +1421,18 @@ public class CombatDaoImpl extends H2Dao implements CombatDao {
 				pivotsGroup = new StringBuilder();
 
 		if (bySource) {
-			pivotsCols.append(", e.source_name, 0 source_instance");
+			pivotsCols.append(", e.source_name, 0 AS source_instance");
 			pivotsGroup.append(", e.source_name");
 
 		} else {
-			pivotsCols.append(", 'Total' source_name, 0 source_instance");
+			pivotsCols.append(", 'Total' AS source_name, 0 AS source_instance");
 		}
 
 		if (byAbility) {
 			pivotsCols.append(", e.ability_name, e.ability_guid");
 			pivotsGroup.append(", e.ability_name, e.ability_guid");
 		} else {
-			pivotsCols.append(", 'Total' ability_name, 0 ability_guid");
+			pivotsCols.append(", 'Total' AS ability_name, 0 AS ability_guid");
 		}
 
 		return getJdbcTemplate().query(SQL_GET_HEALING_TAKEN_TOTALS
