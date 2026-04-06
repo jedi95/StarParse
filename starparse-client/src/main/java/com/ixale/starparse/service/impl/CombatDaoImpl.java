@@ -297,7 +297,7 @@ public class CombatDaoImpl extends H2Dao implements CombatDao {
 					+ " AND ((effect_guid = " + EntityGuid.Damage + " AND target_name != :playerName) OR (effect_guid = " + EntityGuid.AbilityActivate + "))"
 					+ " AND ability_guid IN (SELECT ability_guid FROM events WHERE effect_guid = " + EntityGuid.Damage + " AND source_name = :playerName AND event_id BETWEEN :eventIdFrom AND :eventIdTo)",
 
-	SQL_GET_DAMAGE_DEALT_TOTALS = "SELECT a.*"
+	SQL_GET_DAMAGE_DEALT_TOTALS = "SELECT a.target_name, a.target_instance, a.ability_name, a.ability_guid, a.actions, a.ticks, a.ticks_normal, a.ticks_crit, a.ticks_miss, a.ticks_immune, a.total_normal, a.total_crit, a.max, a.total, a.damage_type, a.sub_time_from, a.sub_time_to"
 			+ ", (CASE WHEN (ticks_normal - ticks_miss - ticks_immune) > 0 THEN ROUND(a.total_normal * 1.0 / (ticks_normal - ticks_miss - ticks_immune)) ELSE 0 END) avg_normal"
 			+ ", (CASE WHEN (ticks - ticks_miss - ticks_immune) > 0 THEN ROUND(a.total * 1.0 / (ticks - ticks_miss - ticks_immune)) ELSE 0 END) avg_hit"
 			+ ", (CASE WHEN ticks_crit > 0 THEN ROUND(total_crit * 1.0 / ticks_crit) ELSE 0 END) avg_crit"
@@ -313,22 +313,23 @@ public class CombatDaoImpl extends H2Dao implements CombatDao {
 			+ " %pivots_where" // target_name != :playerName
 			+ " GROUP BY %pivots_group" // ability_name, ability_guid
 			+ " ) a"
-			+ " INNER JOIN ("
-			+ " SELECT SUM(CASE WHEN effect_guid = " + EntityGuid.Damage + " AND source_name = :playerName AND target_name != :playerName THEN value ELSE 0 END) total, MAX(timestamp) timestamp"
-			+ " FROM events e"
-			+ " WHERE e.event_id BETWEEN :eventIdFrom AND :eventIdTo"
-			+ ") t"
 			// dot names and action counts
 			+ " LEFT JOIN ("
 			+ SQL_GET_DOT_NAMES
 			+ ") dots ON (dots.effect_guid = a.ability_guid AND dots.ability_name != a.ability_name)"
 			// targets
-			+ "LEFT JOIN ("
+			+ " LEFT JOIN ("
 			+ SQL_GET_TARGET_NAMES
 			+ " ) tt ON (tt.target_name = a.target_name AND tt.target_instance = a.target_instance)"
+			// total (cross-join moved after LEFT JOINs for H2 2.x compatibility)
+			+ " INNER JOIN ("
+			+ " SELECT SUM(CASE WHEN effect_guid = " + EntityGuid.Damage + " AND source_name = :playerName AND target_name != :playerName THEN value ELSE 0 END) total, MAX(timestamp) timestamp"
+			+ " FROM events e"
+			+ " WHERE e.event_id BETWEEN :eventIdFrom AND :eventIdTo"
+			+ ") t"
 			+ " ORDER BY a.total DESC",
 
-	SQL_GET_DAMAGE_DEALT_SIMPLE = "SELECT a.*"
+	SQL_GET_DAMAGE_DEALT_SIMPLE = "SELECT a.actions, a.ticks, a.ticks_normal, a.ticks_crit, a.ticks_miss, a.ticks_immune, a.total_normal, a.total_crit, a.max, a.total, a.damage_type, a.sub_time_from, a.sub_time_to"
 			+ ", (CASE WHEN ticks > 0 THEN ROUND(ticks_crit * 100.0 / ticks, 2) ELSE 0 END) AS pct_crit"
 			+ ", (CASE WHEN ticks > 0 THEN ROUND(ticks_miss * 100.0 / ticks, 2) ELSE 0 END) AS pct_miss"
 			+ ", ROUND(a.total * 1000.0 / GREATEST(1000, DATEDIFF('MILLISECOND', :timeFrom, CASE WHEN :timeTo IS NOT NULL THEN :timeTo ELSE t.timestamp END))) dps"
@@ -389,7 +390,7 @@ public class CombatDaoImpl extends H2Dao implements CombatDao {
 					+ " WHERE ea.event_id BETWEEN :eventIdFrom AND :eventIdTo"
 					+ " AND e.source_name = :playerName) e",
 
-	SQL_GET_HEALING_DONE_TOTALS = "SELECT a.*"
+	SQL_GET_HEALING_DONE_TOTALS = "SELECT a.target_name, a.target_instance, a.ability_name, a.ability_guid, a.actions, a.ticks, a.ticks_normal, a.ticks_crit, a.total_normal, a.total_crit, a.total_effective, a.max, a.total, a.absorbed, a.sub_time_from, a.sub_time_to"
 			+ ", (CASE WHEN ticks > 0 THEN ROUND(a.total * 1.0 / ticks) ELSE 0 END) avg_normal"
 			+ ", (CASE WHEN ticks_crit > 0 THEN ROUND(total_crit * 1.0 / ticks_crit) ELSE 0 END) avg_crit"
 			+ ", (CASE WHEN ticks > 0 THEN ROUND(ticks_crit * 100.0 / ticks, 2) ELSE 0 END) AS pct_crit"
@@ -406,6 +407,15 @@ public class CombatDaoImpl extends H2Dao implements CombatDao {
 			+ " %pivots_where" // target_name != :playerName
 			+ " GROUP BY %pivots_group" // ability_name, ability_guid
 			+ " ) a"
+			// dot names and action counts
+			+ " LEFT JOIN ("
+			+ SQL_GET_DOT_NAMES
+			+ ") dots ON (dots.effect_guid = a.ability_guid AND dots.ability_name != a.ability_name)"
+			// targets
+			+ " LEFT JOIN ("
+			+ SQL_GET_TARGET_NAMES
+			+ " ) tt ON (tt.target_name = a.target_name AND tt.target_instance = a.target_instance)"
+			// total (cross-join moved after LEFT JOINs for H2 2.x compatibility)
 			+ " INNER JOIN ("
 			+ " SELECT SUM(CASE WHEN effect_guid = " + EntityGuid.Heal + " AND source_name = :playerName THEN value ELSE 0 END) total"
 			+ ", SUM(CASE WHEN effective_heal IS NOT NULL AND source_name = :playerName THEN effective_heal ELSE 0 END) total_effective"
@@ -420,14 +430,6 @@ public class CombatDaoImpl extends H2Dao implements CombatDao {
 			+ " FROM events e"
 			+ " WHERE e.event_id BETWEEN :eventIdFrom AND :eventIdTo"
 			+ ") t"
-			// dot names and action counts
-			+ " LEFT JOIN ("
-			+ SQL_GET_DOT_NAMES
-			+ ") dots ON (dots.effect_guid = a.ability_guid AND dots.ability_name != a.ability_name)"
-			// targets
-			+ " LEFT JOIN ("
-			+ SQL_GET_TARGET_NAMES
-			+ " ) tt ON (tt.target_name = a.target_name AND tt.target_instance = a.target_instance)"
 			+ " ORDER BY a.total DESC",
 
 	SQL_GET_SOURCE_NAMES = "SELECT source_type, source_name, source_guid, source_instance"
@@ -451,7 +453,7 @@ public class CombatDaoImpl extends H2Dao implements CombatDao {
 					+ " AND target_name = :playerName"
 					+ " AND effect_guid IN (" + EntityGuid.Damage + ")",
 
-	SQL_GET_DAMAGE_TAKEN_TOTALS = "SELECT a.*"
+	SQL_GET_DAMAGE_TAKEN_TOTALS = "SELECT a.source_name, a.source_instance, a.ability_name, a.ability_guid, a.ticks, a.ticks_shield, a.ticks_miss, a.total_absorbed, a.total, a.total_ie, a.max, a.damage_type, a.sub_time_from, a.sub_time_to"
 			+ ", (CASE WHEN ticks > 0 THEN ROUND(a.total * 1.0 / ticks) ELSE 0 END) avg_normal"
 			+ ", (CASE WHEN ticks > 0 THEN ROUND(ticks_shield * 100.0 / ticks, 2) ELSE 0 END) AS pct_shield"
 			+ ", (CASE WHEN ticks > 0 THEN ROUND(ticks_miss * 100.0 / ticks, 2) ELSE 0 END) AS pct_miss"
@@ -465,16 +467,16 @@ public class CombatDaoImpl extends H2Dao implements CombatDao {
 			+ " %pivots_where" // target_name != :playerName
 			+ " GROUP BY %pivots_group" // ability_name, ability_guid
 			+ " ) a"
-			// total
+			// sources
+			+ " LEFT JOIN ("
+			+ SQL_GET_SOURCE_NAMES
+			+ " ) ts ON (ts.source_name = a.source_name AND ts.source_instance = a.source_instance)"
+			// total (cross-join moved after LEFT JOINs for H2 2.x compatibility)
 			+ " INNER JOIN ("
 			+ " SELECT SUM(CASE WHEN effect_guid = " + EntityGuid.Damage + " AND target_name = :playerName THEN value ELSE 0 END) total, MAX(timestamp) timestamp"
 			+ " FROM events e"
 			+ " WHERE e.event_id BETWEEN :eventIdFrom AND :eventIdTo"
 			+ ") t"
-			// sources
-			+ " LEFT JOIN ("
-			+ SQL_GET_SOURCE_NAMES
-			+ " ) ts ON (ts.source_name = a.source_name AND ts.source_instance = a.source_instance)"
 			+ " ORDER BY a.total DESC",
 
 	SQL_GET_HEALING_TAKEN_SUMS =
@@ -522,7 +524,7 @@ public class CombatDaoImpl extends H2Dao implements CombatDao {
 					+ " WHERE ea.event_id BETWEEN :eventIdFrom AND :eventIdTo"
 					+ " AND e.target_name = :playerName) e",
 
-	SQL_GET_HEALING_TAKEN_TOTALS = "SELECT a.*"
+	SQL_GET_HEALING_TAKEN_TOTALS = "SELECT a.source_name, a.source_instance, a.ability_name, a.ability_guid, a.ticks, a.ticks_normal, a.ticks_crit, a.total_normal, a.total_crit, a.total_effective, a.total, a.absorbed, a.sub_time_from, a.sub_time_to"
 			+ ", (CASE WHEN ticks > 0 THEN ROUND(a.total * 1.0 / ticks) ELSE 0 END) avg_normal"
 			+ ", (CASE WHEN ticks_crit > 0 THEN ROUND(total_crit * 1.0 / ticks_crit) ELSE 0 END) avg_crit"
 			+ ", (CASE WHEN ticks > 0 THEN ROUND(ticks_crit * 100.0 / ticks, 2) ELSE 0 END) AS pct_crit"
@@ -539,7 +541,11 @@ public class CombatDaoImpl extends H2Dao implements CombatDao {
 			+ " %pivots_where" // target_name != :playerName
 			+ " GROUP BY %pivots_group" // ability_name, ability_guid
 			+ " ) a"
-			// total
+			// sources
+			+ " LEFT JOIN ("
+			+ SQL_GET_SOURCE_NAMES
+			+ " ) ts ON (ts.source_name = a.source_name AND ts.source_instance = a.source_instance)"
+			// total (cross-join moved after LEFT JOINs for H2 2.x compatibility)
 			+ " INNER JOIN ("
 			+ " SELECT SUM(CASE WHEN effect_guid = " + EntityGuid.Heal + " AND target_name = :playerName THEN value ELSE 0 END) total"
 			+ ", SUM(CASE WHEN effective_heal IS NOT NULL AND target_name = :playerName THEN effective_heal ELSE 0 END) total_effective"
@@ -548,10 +554,6 @@ public class CombatDaoImpl extends H2Dao implements CombatDao {
 			+ " FROM events e"
 			+ " WHERE e.event_id BETWEEN :eventIdFrom AND :eventIdTo"
 			+ ") t"
-			// sources
-			+ " LEFT JOIN ("
-			+ SQL_GET_SOURCE_NAMES
-			+ " ) ts ON (ts.source_name = a.source_name AND ts.source_instance = a.source_instance)"
 			+ " ORDER BY a.total DESC",
 
 	SQL_GET_COMBAT_EFFECTS =
