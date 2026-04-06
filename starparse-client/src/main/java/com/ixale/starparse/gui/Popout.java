@@ -210,6 +210,7 @@ public class Popout {
 		doLayout();
 
 		try {
+			wrapper.setAlwaysOnTop(true);
 			wrapper.show();
 			Win32Utils.removeWindowFromTaskbar(wrapper);
 			if (mouseTransparent) {
