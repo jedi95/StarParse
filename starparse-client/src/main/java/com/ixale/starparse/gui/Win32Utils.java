@@ -123,8 +123,9 @@ public class Win32Utils {
 		}
 
 		try {
-			@SuppressWarnings({"deprecation"})
-			final TKStage tkStage = stage.impl_getPeer();
+			final Method getPeer = javafx.stage.Window.class.getDeclaredMethod("getPeer");
+			getPeer.setAccessible(true);
+			final Object tkStage = getPeer.invoke(stage);
 			if (tkStage == null) {
 				// does not exists (yet)
 				return null;
