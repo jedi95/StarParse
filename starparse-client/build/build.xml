@@ -110,39 +110,39 @@
 			</fileset>
 		</copy>
 		<copy todir="externalLibs">
-			<fileset dir="${user.home}\.m2\repository\org\openjfx\javafx-controls\24">
-				<include name="javafx-controls-24.jar"/>
-				<include name="javafx-controls-24-win.jar"/>
+			<fileset dir="${user.home}\.m2\repository\org\openjfx\javafx-controls\26">
+				<include name="javafx-controls-26.jar"/>
+				<include name="javafx-controls-26-win.jar"/>
 			</fileset>
 		</copy>
 		<copy todir="externalLibs">
-			<fileset dir="${user.home}\.m2\repository\org\openjfx\javafx-fxml\24">
-				<include name="javafx-fxml-24.jar"/>
-				<include name="javafx-fxml-24-win.jar"/>
+			<fileset dir="${user.home}\.m2\repository\org\openjfx\javafx-fxml\26">
+				<include name="javafx-fxml-26.jar"/>
+				<include name="javafx-fxml-26-win.jar"/>
 			</fileset>
 		</copy>
 		<copy todir="externalLibs">
-			<fileset dir="${user.home}\.m2\repository\org\openjfx\javafx-media\24">
-				<include name="javafx-media-24.jar"/>
-				<include name="javafx-media-24-win.jar"/>
+			<fileset dir="${user.home}\.m2\repository\org\openjfx\javafx-media\26">
+				<include name="javafx-media-26.jar"/>
+				<include name="javafx-media-26-win.jar"/>
 			</fileset>
 		</copy>
 		<copy todir="externalLibs">
-			<fileset dir="${user.home}\.m2\repository\org\openjfx\javafx-swing\24">
-				<include name="javafx-swing-24.jar"/>
-				<include name="javafx-swing-24-win.jar"/>
+			<fileset dir="${user.home}\.m2\repository\org\openjfx\javafx-swing\26">
+				<include name="javafx-swing-26.jar"/>
+				<include name="javafx-swing-26-win.jar"/>
 			</fileset>
 		</copy>
 		<copy todir="externalLibs">
-			<fileset dir="${user.home}\.m2\repository\org\openjfx\javafx-base\24">
-				<include name="javafx-base-24.jar"/>
-				<include name="javafx-base-24-win.jar"/>
+			<fileset dir="${user.home}\.m2\repository\org\openjfx\javafx-base\26">
+				<include name="javafx-base-26.jar"/>
+				<include name="javafx-base-26-win.jar"/>
 			</fileset>
 		</copy>
 		<copy todir="externalLibs">
-			<fileset dir="${user.home}\.m2\repository\org\openjfx\javafx-graphics\24">
-				<include name="javafx-graphics-24.jar"/>
-				<include name="javafx-graphics-24-win.jar"/>
+			<fileset dir="${user.home}\.m2\repository\org\openjfx\javafx-graphics\26">
+				<include name="javafx-graphics-26.jar"/>
+				<include name="javafx-graphics-26-win.jar"/>
 			</fileset>
 		</copy>
 
@@ -189,12 +189,12 @@
 				<include name="javax.inject-1.jar"/>
 				<include name="jna-platform-5.18.1.jar"/>
 				<include name="jna-5.18.1.jar"/>
-				<include name="javafx-controls-24-win.jar"/>
-				<include name="javafx-fxml-24-win.jar"/>
-				<include name="javafx-media-24-win.jar"/>
-				<include name="javafx-swing-24-win.jar"/>
-				<include name="javafx-base-24-win.jar"/>
-				<include name="javafx-graphics-24-win.jar"/>
+				<include name="javafx-controls-26-win.jar"/>
+				<include name="javafx-fxml-26-win.jar"/>
+				<include name="javafx-media-26-win.jar"/>
+				<include name="javafx-swing-26-win.jar"/>
+				<include name="javafx-base-26-win.jar"/>
+				<include name="javafx-graphics-26-win.jar"/>
 			</fileset>
 		</copy>
 
@@ -222,7 +222,7 @@
 			</fileset>
 		</copy>
 
-		<javac includeantruntime="false" release="25" srcdir="build/src" destdir="build/classes" encoding="windows-1252">
+		<javac includeantruntime="false" release="26" srcdir="build/src" destdir="build/classes" encoding="windows-1252">
 			<classpath>
 				<fileset dir="build/libs">
 					<include name="*"/>
