@@ -1,7 +1,8 @@
 package com.ixale.starparse.domain;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public enum EntityGroup {
 	EFFECT,
@@ -16,17 +17,15 @@ public enum EntityGroup {
 	GENERIC,
 	;
 
-	private static final HashMap<EntityGroup, ArrayList<Long>> groups = new HashMap<EntityGroup, ArrayList<Long>>();
+	private static final EnumMap<EntityGroup, Set<Long>> groups = new EnumMap<>(EntityGroup.class);
 
 	public static void addGuid(final EntityGroup group, long guid)
 	{
-		if (!groups.containsKey(group)) {
-			groups.put(group, new ArrayList<Long>());
-		}
-		groups.get(group).add(guid);
+		groups.computeIfAbsent(group, k -> new HashSet<>()).add(guid);
 	}
 
 	public static boolean containsGuid(final EntityGroup group, long guid) {
-		return groups.containsKey(group) && groups.get(group).contains(guid);
+		final Set<Long> set = groups.get(group);
+		return set != null && set.contains(guid);
 	}
 }

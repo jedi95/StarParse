@@ -191,7 +191,7 @@ public class Parser {
 			PHASE_DAMAGE_MININUM = 5 * 1000,
 			HEALING_THREAT_TOLERANCE = 5;
 
-	private Calendar c;
+	private long baseDateMs;
 	private int lastHour;
 
 	// parsed
@@ -275,7 +275,7 @@ public class Parser {
 	public void reset() {
 		combatLogId = 0;
 		combatLog = null;
-		c = Calendar.getInstance(TimeUtils.getCurrentTimezone());
+		baseDateMs = 0;
 		lastHour = 0;
 
 		eventId = 0;
@@ -379,14 +379,23 @@ public class Parser {
 		// setup date
 		fileMatcher = filePattern.matcher(logFile.getName());
 
+		final Calendar c = Calendar.getInstance(TimeUtils.getCurrentTimezone());
 		if (fileMatcher.matches()) {
 			c.set(Calendar.YEAR, Integer.parseInt(fileMatcher.group("Year")));
 			c.set(Calendar.MONTH, Integer.parseInt(fileMatcher.group("Month")) - 1);
 			c.set(Calendar.DATE, Integer.parseInt(fileMatcher.group("Day")));
+			c.set(Calendar.HOUR_OF_DAY, 0);
+			c.set(Calendar.MINUTE, 0);
+			c.set(Calendar.SECOND, 0);
+			c.set(Calendar.MILLISECOND, 0);
 			lastHour = Integer.parseInt(fileMatcher.group("HH"));
 		} else {
 			// probably custom name (e.g. "420 parse 360 scope.txt")
 			c.setTimeInMillis(logFile.lastModified());
+			c.set(Calendar.HOUR_OF_DAY, 0);
+			c.set(Calendar.MINUTE, 0);
+			c.set(Calendar.SECOND, 0);
+			c.set(Calendar.MILLISECOND, 0);
 		}
 
 		// FIXME: year 1472
@@ -394,7 +403,11 @@ public class Parser {
 			c.set(Calendar.YEAR, Calendar.getInstance().get(Calendar.YEAR));
 		}
 
-		combatLog = new CombatLog(++combatLogId, logFile.getCanonicalPath(), c.getTimeInMillis());
+		baseDateMs = c.getTimeInMillis();
+		combatLog = new CombatLog(++combatLogId, logFile.getCanonicalPath(), baseDateMs);
+
+		// pre-allocate ~4000 events per MB
+		events.ensureCapacity((int) (logFile.length() / 1024L / 1024L * 4000L));
 	}
 
 	public void closeCombatLogFile() {
@@ -420,12 +433,14 @@ public class Parser {
 			baseMatcher = v7ZonePattern.matcher(line);
 			if (baseMatcher.matches()) {
 				final long timestamp = getTimestamp(baseMatcher);
-				context.setVersion(baseMatcher.group("Version"));
+				final String versionString = baseMatcher.group("Version");
+				context.setVersion(versionString);
 				context.setServerId(baseMatcher.group("ServerId"));
 				setCharacterName(getSourceActor(baseMatcher, timestamp, null), timestamp);
-				if (baseMatcher.group("InstanceName") != null && !baseMatcher.group("InstanceName").isEmpty()) {
+				final String instanceNameString = baseMatcher.group("InstanceName");
+				if (instanceNameString != null && !instanceNameString.isEmpty()) {
 					parseInstanceType(
-							baseMatcher.group("InstanceName"),
+							instanceNameString,
 							baseMatcher.group("InstanceGuid"),
 							baseMatcher.group("InstanceType"),
 							baseMatcher.group("InstanceTypeGuid"),
@@ -508,9 +523,10 @@ public class Parser {
 					baseMatcher = zonePattern.matcher(line);
 					if (baseMatcher.matches()) {
 						final long timestamp = getTimestamp(baseMatcher);
-						if (baseMatcher.group("InstanceName") != null && !baseMatcher.group("InstanceName").isEmpty()) {
+						final String instanceNameString = baseMatcher.group("InstanceName");
+						if (instanceNameString != null && !instanceNameString.isEmpty()) {
 							parseInstanceType(
-									baseMatcher.group("InstanceName"),
+									instanceNameString,
 									baseMatcher.group("InstanceGuid"),
 									baseMatcher.group("InstanceType"),
 									baseMatcher.group("InstanceTypeGuid"),
@@ -548,18 +564,21 @@ public class Parser {
 		}
 
 		// source
-		if (baseMatcher.group("Source") != null && !baseMatcher.group("Source").isEmpty()) {
-			e.setSource(getSourceActor(baseMatcher, e.getTimestamp(), baseMatcher.group("EffectGuid")));
+		final String sourceGroup = baseMatcher.group("Source");
+		final String effectGuidString = baseMatcher.group("EffectGuid");
+		if (sourceGroup != null && !sourceGroup.isEmpty()) {
+			e.setSource(getSourceActor(baseMatcher, e.getTimestamp(), effectGuidString));
 		} else {
 			e.setSource(context.getActor("Unknown", Actor.Type.NPC));
 		}
 
 		// target
-		if (baseMatcher.group("Target") != null && !baseMatcher.group("Target").isEmpty()) {
-			if ("=".equals(baseMatcher.group("Target"))) {
+		final String targetGroup = baseMatcher.group("Target");
+		if (targetGroup != null && !targetGroup.isEmpty()) {
+			if ("=".equals(targetGroup)) {
 				e.setTarget(e.getSource());
 			} else {
-				e.setTarget(getTargetActor(baseMatcher, e.getTimestamp(), baseMatcher.group("EffectGuid")));
+				e.setTarget(getTargetActor(baseMatcher, e.getTimestamp(), effectGuidString));
 			}
 		} else {
 			if (isEffectiveLogged) {
@@ -596,13 +615,15 @@ public class Parser {
 			}
 		}
 
-		if (zonePattern == null && baseMatcher.group("Value") != null && "836045448945489".equals(baseMatcher.group("EffectGuid"))) { // EnterCombat
+		final String valueGroupString = baseMatcher.group("Value");
+		if (zonePattern == null && valueGroupString != null && "836045448945489".equals(effectGuidString)) { // EnterCombat
 			// enter, any ops details? // pre v7
-			parseInstanceType(null, null, baseMatcher.group("Value"), null, e.getTimestamp());
+			parseInstanceType(null, null, valueGroupString, null, e.getTimestamp());
 		}
 
 		// ability
-		if (baseMatcher.group("Ability") != null && !baseMatcher.group("Ability").isEmpty()) {
+		final String abilityGroup = baseMatcher.group("Ability");
+		if (abilityGroup != null && !abilityGroup.isEmpty()) {
 			e.setAbility(getEntity(
 					baseMatcher.group("AbilityName"),
 					baseMatcher.group("AbilityGuid")));
@@ -616,35 +637,39 @@ public class Parser {
 		// effect
 		e.setEffect(getEntity(
 				baseMatcher.group("EffectName"),
-				baseMatcher.group("EffectGuid")));
+				effectGuidString));
 
 		// value (healing / damage)
-		if (baseMatcher.group("Value") != null
-				&& !EntityGuid.EnterCombat.toString().equals(baseMatcher.group("EffectGuid"))
-				&& !EntityGuid.ExitCombat.toString().equals(baseMatcher.group("EffectGuid"))) {
-			e.setValue(Integer.parseInt(baseMatcher.group("Value")));
+		if (valueGroupString != null
+				&& !EntityGuid.EnterCombat.toString().equals(effectGuidString)
+				&& !EntityGuid.ExitCombat.toString().equals(effectGuidString)) {
+			e.setValue(Integer.parseInt(valueGroupString));
 			// critical hit?
 			e.setCrit(baseMatcher.group("IsCrit") != null);
 
 			// damage
-			if (baseMatcher.group("DamageType") != null && !baseMatcher.group("DamageTypeGuid").equals(EntityGuid.Charges.toString())) {
+			final String damageTypeString = baseMatcher.group("DamageType");
+			final String damageTypeGuidString = baseMatcher.group("DamageTypeGuid");
+			if (damageTypeString != null && !EntityGuid.Charges.toString().equals(damageTypeGuidString)) {
 				e.setDamage(getEntity(
-						baseMatcher.group("DamageType"),
-						baseMatcher.group("DamageTypeGuid")));
+						damageTypeString,
+						damageTypeGuidString));
 			}
 
 			// reflect
-			if (baseMatcher.group("ReflectType") != null) {
+			final String reflectTypeString = baseMatcher.group("ReflectType");
+			if (reflectTypeString != null) {
 				e.setReflect(getEntity(
-						baseMatcher.group("ReflectType"),
+						reflectTypeString,
 						baseMatcher.group("ReflectTypeGuid")));
 			}
 
 			// mitigation
 			if (baseMatcher.group("IsMitigation") != null) {
-				if (baseMatcher.group("MitigationType") != null) {
+				final String mitigationTypeString = baseMatcher.group("MitigationType");
+				if (mitigationTypeString != null) {
 					e.setMitigation(getEntity(
-							baseMatcher.group("MitigationType"),
+							mitigationTypeString,
 							baseMatcher.group("MitigationTypeGuid")));
 
 					// attack type (incoming attacks to known actors only)
@@ -661,11 +686,13 @@ public class Parser {
 			}
 
 			// absorption
-			if (baseMatcher.group("AbsorbValue") != null) {
+			final String absorbValueString = baseMatcher.group("AbsorbValue");
+			if (absorbValueString != null) {
+				final String absorbTypeString = baseMatcher.group("AbsorbType");
 				e.setAbsorption(getEntity(
-						baseMatcher.group("AbsorbType"),
+						absorbTypeString,
 						baseMatcher.group("AbsorbTypeGuid")));
-				e.setAbsorbed(Integer.parseInt(baseMatcher.group("AbsorbValue")));
+				e.setAbsorbed(Integer.parseInt(absorbValueString));
 				if (e.getValue() != null && e.getAbsorbed() != null && e.getAbsorbed() > e.getValue()) {
 					e.setAbsorbed(e.getValue());
 				}
@@ -686,8 +713,9 @@ public class Parser {
 		}
 
 		// threat
-		if (baseMatcher.group("Threat") != null) {
-			e.setThreat(Long.parseLong(baseMatcher.group("Threat")));
+		final String threatString = baseMatcher.group("Threat");
+		if (threatString != null) {
+			e.setThreat(Long.parseLong(threatString));
 		}
 
 		// calculated context values
@@ -753,20 +781,20 @@ public class Parser {
 		return wasInCombat && combat == null;
 	}
 
-	private Long getTimestamp(Matcher m) {
+	private long getTimestamp(Matcher m) {
 
-		c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(m.group("HH")));
-		c.set(Calendar.MINUTE, Integer.parseInt(m.group("MM")));
-		c.set(Calendar.SECOND, Integer.parseInt(m.group("SS")));
-		c.set(Calendar.MILLISECOND, Integer.parseInt(m.group("MS")));
+		final int hh = Integer.parseInt(m.group("HH"));
+		final int mm = Integer.parseInt(m.group("MM"));
+		final int ss = Integer.parseInt(m.group("SS"));
+		final int ms = Integer.parseInt(m.group("MS"));
 
-		if (lastHour - c.get(Calendar.HOUR_OF_DAY) > 2) {
+		if (lastHour - hh > 2) {
 			// over midnight (2 = ignore daylight saving)
-			c.add(Calendar.DAY_OF_MONTH, 1);
+			baseDateMs += 86400000L;
 		}
-		lastHour = c.get(Calendar.HOUR_OF_DAY);
+		lastHour = hh;
 
-		return c.getTimeInMillis();
+		return baseDateMs + hh * 3600000L + mm * 60000L + ss * 1000L + ms;
 	}
 
 	private Actor getSourceActor(final Matcher baseMatcher, final long timestamp, final String effectGuid) {
