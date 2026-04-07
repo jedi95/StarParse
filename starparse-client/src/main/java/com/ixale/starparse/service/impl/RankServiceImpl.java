@@ -42,7 +42,8 @@ public class RankServiceImpl implements RankService {
 	}
 
 	@Override
-	public void getRank(final RaidBoss boss, final RankType type, final CharacterDiscipline discipline, int tick, int value,
+	public void getRank(final RaidBoss boss, final RankType type, final CharacterDiscipline discipline, int tick,
+			int value,
 			Consumer<RankClass> callback) {
 		getRanking(boss, type, discipline, (ranking) -> {
 			callback.accept(getRank(ranking, tick, value));
@@ -76,10 +77,12 @@ public class RankServiceImpl implements RankService {
 					});
 
 					if (logger.isDebugEnabled()) {
-						logger.debug("Ranking fetched from remote (" + boss + ", " + type + ", " + discipline + "): " + ranking);
+						logger.debug("Ranking fetched from remote (" + boss + ", " + type + ", " + discipline + "): "
+								+ ranking);
 					}
 				} catch (Exception e) {
-					if (e.getMessage().equals("Read timed out") || e.getMessage().startsWith("Server returned non-OK status: 404")) {
+					if (e.getMessage().equals("Read timed out")
+							|| e.getMessage().startsWith("Server returned non-OK status: 404")) {
 						// local issue, silently ignore
 						return;
 					}
@@ -110,8 +113,19 @@ public class RankServiceImpl implements RankService {
 		if (host == null || host.isEmpty()) {
 			throw new IllegalStateException("Host not set");
 		}
-		//noinspection HttpUrlsUsage
-		return new URI("http", null, host, 80, "/" + RankService.RANK_URL + "/" + boss.getRaidBossName().name() + "/" + key + ".xml", null, null).toURL();
+
+		// extract hostname (ignoring port and path components in 'host' if any)
+		String hostname = host;
+		if (!hostname.contains("://")) {
+			hostname = "http://" + hostname;
+		}
+		hostname = URI.create(hostname).getHost();
+
+		// noinspection HttpUrlsUsage
+		final String url = "http://" + hostname + "/" + RankService.RANK_URL + "/" + boss.getRaidBossName().name() + "/"
+				+ key + ".xml";
+
+		return URI.create(url).toURL();
 	}
 
 	public Ranking readRanking(final String content) {
@@ -127,7 +141,8 @@ public class RankServiceImpl implements RankService {
 		}
 
 		final RankClass rank = new RankClass(ranking.getType());
-		if (ranking.getPercentiles() == null || ranking.getPercentiles().isEmpty() || ranking.getPercentiles().size() < 10) {
+		if (ranking.getPercentiles() == null || ranking.getPercentiles().isEmpty()
+				|| ranking.getPercentiles().size() < 10) {
 			rank.setReason(Reason.NO_DATA_AVAILABLE);
 			return rank;
 		}
