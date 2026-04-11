@@ -23,7 +23,7 @@ import com.ixale.starparse.service.impl.Context;
 public class CombatReviveTest {
 
 	@Test
-	public void testBestiaCombat() throws Exception {
+	public void testCombatReviveDoesNotSplitCombat() throws Exception {
 		final Context context = new Context();
 		final Parser p = new Parser(context);
 		// The file name is used by the parser to determine the combat date
@@ -38,8 +38,8 @@ public class CombatReviveTest {
 		}
 
 		List<Combat> combats = p.getCombats();
-		// The parser might not have closed the final combat if it doesn't see a separator.
-		// However, with Bestia's death, it should be closed.
+		// The parser might not have closed the final combat if it doesn't see a
+		// separator. However, with Bestia's death, it should be closed.
 		Combat c = null;
 		if (!combats.isEmpty()) {
 			c = combats.get(0);
@@ -56,8 +56,7 @@ public class CombatReviveTest {
 		assertNotNull("Combat end time not set", c.getTimeTo());
 		long durationMs = c.getTimeTo() - c.getTimeFrom();
 		double durationSeconds = durationMs / 1000.0;
-		// 6m 20s = 380s (+- 1s)
-		assertEquals(380.0, durationSeconds, 1.0);
+		assertEquals(382.186, durationSeconds, 1.0);
 
 		long totalDamageDealt = 0;
 		long totalDamageTaken = 0;
@@ -80,9 +79,7 @@ public class CombatReviveTest {
 		double dps = totalDamageDealt / durationSeconds;
 		double dtps = totalDamageTaken / durationSeconds;
 
-		// 42794 (+- 500)
-		assertEquals(42794.0, dps, 500.0);
-		// 20871 (+- 250)
-		assertEquals(20871.0, dtps, 250.0);
+		assertEquals(42738.0, dps, 100.0);
+		assertEquals(21016.0, dtps, 50.0);
 	}
 }
