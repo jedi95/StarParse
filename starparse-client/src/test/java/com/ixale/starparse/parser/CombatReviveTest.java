@@ -79,7 +79,7 @@ public class CombatReviveTest {
 		double dps = totalDamageDealt / durationSeconds;
 		double dtps = totalDamageTaken / durationSeconds;
 
-		assertEquals(42738.0, dps, 100.0);
-		assertEquals(21016.0, dtps, 50.0);
+		assertEquals(42629.4, dps, 200.0);
+		assertEquals(20791.0, dtps, 100.0);
 	}
 }

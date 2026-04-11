@@ -236,6 +236,7 @@ public class Parser {
 	private int combatId;
 	private Combat combat;
 	private Long combatConnectLimit;
+	private boolean combatRevivePending = false;
 	private BossUpgrade combatBossUpgrade;
 	private String instanceName;
 	private Long instanceGuid;
@@ -284,6 +285,7 @@ public class Parser {
 		combatId = 0;
 		combat = null;
 		combatConnectLimit = null;
+		combatRevivePending = false;
 		combatBossUpgrade = null;
 		instanceName = null;
 		instanceGuid = null;
@@ -1044,6 +1046,7 @@ public class Parser {
 			if (isTargetThisPlayer(e) && isEffectRevive(e)) {
 				// revived within REVIVE limit, setup RETURN limit and keep waiting
 				combatConnectLimit = e.getTimestamp() + COMBAT_RETURN_WINDOW;
+				combatRevivePending = true;
 
 			} else if (isTargetThisPlayer(e) && isEffectCombatDrop(e)) {
 				// combat drop detected within DELAY window, setup RETURN limit and keep waiting
@@ -1051,11 +1054,18 @@ public class Parser {
 				// all combat drops are suspicious as you can drop, enter, kill/discard add, exit combat and then enter again (e.g. Raptus challenge)
 				lastCombatDropEvent = e;
 
+			} else if (combatRevivePending && isSourceThisPlayer(e) && e.getThreat() != null) {
+				// player was battle-rezzed and is now generating threat, which means
+				// they are actively back in combat - reopen just like EnterCombat would
+				combat.setEventIdTo(null);
+				combat.setTimeTo(null);
+				combatConnectLimit = null;
+				combatRevivePending = false;
+
 			} else if (isSourceThisPlayer(e) && e.getValue() != null && (e.getThreat() != null || isEffectDamage(e))) {
 				// gracefully include any delayed damage/healing abilities
 				// (after dying, DOTs can be still ticking, although causing no threat)
 				combat.setEventIdTo(e.getEventId());
-				// combat.setTimeTo(e.getTimestamp()); // do not extend, keep the original time
 			}
 		}
 
@@ -1145,6 +1155,7 @@ public class Parser {
 
 	private void closeCurrentCombat() {
 		combatConnectLimit = null;
+		combatRevivePending = false;
 		combats.add(combat);
 
 		if (currentBossPhase != null && combat.getEventIdTo() != null) {
